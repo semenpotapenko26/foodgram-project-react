@@ -20,7 +20,6 @@ class CustomUserViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         '''Метод для выбора сериализатора.'''
         if self.action == 'create':
-            print('СОЗДАЕМ ПОЛЬЗОВАТЕЛЯ')
             return UserPostSerializer
         return UserSerializer
 
@@ -47,7 +46,7 @@ class CustomUserViewSet(viewsets.ModelViewSet):
         serializer = UserSerializer(request.user, context=context)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @action(methods=['post', 'delete'], detail=True,
+    @action(methods=['post'], detail=True,
             permission_classes=[permissions.IsAuthenticated])
     def subscribe(self, request, *args, **kwargs):
         '''Меотод для подписки на других авторов.'''
@@ -67,6 +66,11 @@ class CustomUserViewSet(viewsets.ModelViewSet):
                 'request': request}
             serializer = FollowSerializer(author, context=context)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @subscribe.mapping.delete
+    def remove_from_subscriptions(self, request, *args, **kwargs):
+        '''Меотод для отписки на других авторов.'''
+        author = get_object_or_404(CustomUser, id=kwargs.get('pk'))
         subscription = Follow.objects.filter(author=author)
         if subscription:
             subscription.delete()

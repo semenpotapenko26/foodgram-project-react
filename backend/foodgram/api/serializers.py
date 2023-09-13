@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.db.models import F
 from django.forms import ValidationError
 from drf_extra_fields.fields import Base64ImageField
@@ -70,9 +71,7 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = ('id', 'tags', 'author', 'ingredients',
-                  'is_favorited', 'is_in_shopping_cart',
-                  'name', 'image', 'text', 'cooking_time')
+        fields = '__all__'
 
     def get_ingredients(self, obj):
         '''Получение поля ингредиентов.'''
@@ -101,6 +100,7 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
             raise ValidationError('Мало данных.')
         return data
 
+    @transaction.atomic
     def create(self, validated_data):
         '''Создание рецепта.'''
         ingredients = self.initial_data.pop('ingredients')
@@ -115,6 +115,7 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         recipe.tags.set(tags)
         return recipe
 
+    @transaction.atomic
     def update(self, instance, validated_data):
         '''Обновление рецепта.'''
         ingredients = self.initial_data.pop('ingredients')

@@ -58,22 +58,26 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(
         methods=[
-            'post', 'delete'], detail=True, permission_classes=[
+            'post'], detail=True, permission_classes=[
                 permissions.IsAuthenticated])
     def favorite(self, request, *args, **kwargs):
-        '''Добавление, удаление, проверка для избранного.'''
+        '''Добавление рецепта в избранное.'''
         recipe = get_object_or_404(Recipe, id=kwargs.get('pk'))
-        if request.method == 'POST':
-            if Favorite.objects.filter(
-                    user=request.user, recipe=recipe).exists():
-                return Response(
-                    {'errors': 'Этот рецепт уже в избранном.'},
-                    status=status.HTTP_400_BAD_REQUEST)
-            serializer = FavoriteSerializer(data=request.data)
-            if serializer.is_valid(raise_exception=True):
-                serializer.save(user=request.user, recipe=recipe)
-                return Response(
-                    serializer.data, status=status.HTTP_201_CREATED)
+        if Favorite.objects.filter(
+                user=request.user, recipe=recipe).exists():
+            return Response(
+                {'errors': 'Этот рецепт уже в избранном.'},
+                status=status.HTTP_400_BAD_REQUEST)
+        serializer = FavoriteSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save(user=request.user, recipe=recipe)
+            return Response(
+                serializer.data, status=status.HTTP_201_CREATED)
+
+    @favorite.mapping.delete
+    def remove_from_favorite(self, request, *args, **kwargs):
+        '''Удаление рецепта из избранного.'''
+        recipe = get_object_or_404(Recipe, id=kwargs.get('pk'))
         recipe_to_del = Favorite.objects.filter(user=request.user,
                                                 recipe=recipe)
         if recipe_to_del:
@@ -84,33 +88,36 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 {'errors': 'Такого рецепта в избранном нет.'},
                 status=status.HTTP_400_BAD_REQUEST)
 
-    @action(methods=['post', 'delete'],
+    @action(methods=['post'],
             detail=True, permission_classes=[permissions.IsAuthenticated])
     def shopping_cart(self, request, *args, **kwargs):
-        '''Добавление и удаление рецепта из списка покупок.'''
+        '''Добавление рецепта в список покупок.'''
         recipe = get_object_or_404(Recipe, id=kwargs.get('pk'))
-        if request.method == 'POST':
-            if ShoppingCart.objects.filter(
-                    user=request.user, recipe=recipe).exists():
-                return Response(
-                    {'errors': 'Рецепт уже есть в списке покупок.'},
-                    status=status.HTTP_400_BAD_REQUEST)
-            serializer = ShoppingCartSerializer(data=request.data)
-            if serializer.is_valid(raise_exception=True):
-                serializer.save(
-                    user=request.user, recipe=recipe)
-                return Response(
-                    serializer.data, status=status.HTTP_201_CREATED)
-        if request.method == 'DELETE':
-            recipe_to_del = ShoppingCart.objects.filter(
+        if ShoppingCart.objects.filter(
+                user=request.user, recipe=recipe).exists():
+            return Response(
+                {'errors': 'Рецепт уже есть в списке покупок.'},
+                status=status.HTTP_400_BAD_REQUEST)
+        serializer = ShoppingCartSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save(
                 user=request.user, recipe=recipe)
-            if recipe_to_del:
-                recipe_to_del.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            else:
-                return Response(
-                    {'errors': 'Такого рецепта нет в списке покупок.'},
-                    status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                serializer.data, status=status.HTTP_201_CREATED)
+
+    @shopping_cart.mapping.delete
+    def remove_from_shopping_list(self, request, *args, **kwargs):
+        '''Удаление рецепта из списка покупок.'''
+        recipe = get_object_or_404(Recipe, id=kwargs.get('pk'))
+        recipe_to_del = ShoppingCart.objects.filter(
+            user=request.user, recipe=recipe)
+        if recipe_to_del:
+            recipe_to_del.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response(
+                {'errors': 'Такого рецепта нет в списке покупок.'},
+                status=status.HTTP_400_BAD_REQUEST)
 
     @action(
         methods=['get'], detail=False,
