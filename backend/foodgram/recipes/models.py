@@ -1,4 +1,5 @@
 from django.db import models
+
 from users.models import CustomUser
 
 from .constants import CHOICE_COLOR

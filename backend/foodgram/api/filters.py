@@ -1,6 +1,7 @@
 from django_filters import rest_framework as filters
-from recipes.models import CustomUser, Recipe, Tag
 from rest_framework.filters import SearchFilter
+
+from recipes.models import CustomUser, Recipe, Tag
 
 
 class IngredientsFilter(SearchFilter):

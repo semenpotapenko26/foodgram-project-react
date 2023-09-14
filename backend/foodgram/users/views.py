@@ -1,9 +1,10 @@
-from api.pagination import CustomApiPagination
 from django.shortcuts import get_object_or_404
 from djoser.serializers import SetPasswordSerializer
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+
+from api.pagination import CustomApiPagination
 
 from .models import CustomUser, Follow
 from .serializers import FollowSerializer, UserPostSerializer, UserSerializer

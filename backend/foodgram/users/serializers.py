@@ -1,6 +1,7 @@
-from recipes.models import Recipe
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
+
+from recipes.models import Recipe
 
 from .models import CustomUser, Follow
 
@@ -31,6 +32,11 @@ class UserPostSerializer(serializers.ModelSerializer):
             'email', 'id', 'username',
             'first_name', 'last_name', 'password')
 
+    def validate_username(self, value):
+        if value == 'me':
+            raise serializers.ValidationError('Не называйтесь "me"')
+        return value
+
     def create(self, validated_data):
         password = validated_data.pop('password')
         user = CustomUser(**validated_data)
@@ -48,6 +54,8 @@ class DemoRecipeSerializer(serializers.ModelSerializer):
 
 class FollowSerializer(UserSerializer):
     '''Сериализатор для подписок.'''
+    first_name = serializers.CharField(required=True)
+    last_name = serializers.CharField(required=True)
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
 
