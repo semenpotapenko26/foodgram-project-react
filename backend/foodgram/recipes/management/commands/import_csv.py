@@ -9,7 +9,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         '''Иморт данных для ингредиентов'''
-        df = pd.read_csv('C:/Dev/foodgram-project-react/data/ingredients.csv')
+        df = pd.read_csv('data/ingredients.csv')
         for import_name, import_measurement_unit in zip(
                 df.name, df.measurement_unit):
             models = Ingredient(

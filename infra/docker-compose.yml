@@ -1,6 +1,30 @@
 version: '3.3'
-services:
 
+volumes:
+  pg_data:
+  result_build:
+  static:
+  media_volume:
+
+services:
+  db:
+    image: postgres:13.10
+    ports:
+      - 5432:5432
+    restart: always
+    env_file: ../.env
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+  backend:
+    build:
+      context: ../backend/foodgram/
+      dockerfile: Dockerfile
+    env_file: ../.env
+    volumes:
+      - static:/app/static/
+      - media_volume:/app/media/
+    depends_on:
+      - db
   frontend:
     build:
       context: ../frontend
@@ -15,3 +39,7 @@ services:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - ../frontend/build:/usr/share/nginx/html/
       - ../docs/:/usr/share/nginx/html/api/docs/
+      - static:/var/html/static/
+      - media_volume:/var/html/media/
+    depends_on:
+      - backend

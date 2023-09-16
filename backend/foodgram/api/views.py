@@ -152,7 +152,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         pdfmetrics.registerFont(
             TTFont(
                 'DejaVuSans',
-                'C:/Dev/foodgram-project-react/static/DejaVuSans.ttf',
+                'font/DejaVuSans.ttf',
                 'utf-8'))
 
         response = HttpResponse(content_type='application/pdf')
